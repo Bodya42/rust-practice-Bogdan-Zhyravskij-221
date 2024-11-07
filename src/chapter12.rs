@@ -234,3 +234,84 @@ fn test5() {
 
     println!("Success!");
 }
+
+
+
+
+Chapter 12.3
+
+
+use std::fmt;
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl fmt::Display for Point {
+    // IMPLEMENT fmt method
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "The point is ({}, {})", self.x, self.y)
+    }
+}
+
+fn test1() {
+    let origin = Point { x: 0, y: 0 };
+    
+    // FILL in the blanks
+    assert_eq!(origin.to_string(), "The point is (0, 0)");  // Using to_string() method
+    assert_eq!(format!("{}", origin), "The point is (0, 0)");  // Using format! macro
+
+    println!("Success!");
+}
+
+
+
+use std::str::FromStr;
+
+fn test2() {
+    let parsed: i32 = "5".parse().unwrap();  // `parse()` converts the string to i32
+    let turbo_parsed: i32 = "10".parse().unwrap();  // Explicitly annotate type for turbo_parsed
+    let from_str = i32::from_str("20").unwrap();  // Alternatively, use `from_str` directly
+    
+    let sum = parsed + turbo_parsed + from_str;  // Sum the parsed values
+    
+    assert_eq!(sum, 35);  // Assert the sum is 35
+
+    println!("Success!");
+}
+
+
+
+use std::str::FromStr;
+use std::num::ParseIntError;
+
+#[derive(Debug, PartialEq)]
+struct Point {
+    x: i32,
+    y: i32
+}
+
+impl FromStr for Point {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let coords: Vec<&str> = s.trim_matches(|p| p == '(' || p == ')')
+                                 .split(',')
+                                 .map(|x| x.trim())
+                                 .collect();
+
+        let x_fromstr = coords[0].parse::<i32>()?;
+        let y_fromstr = coords[1].parse::<i32>()?;
+
+        Ok(Point { x: x_fromstr, y: y_fromstr })
+    }
+}
+
+fn test3() {
+    // FILL in the blanks in two ways
+    let p = "(3, 4)".parse::<Point>();
+    assert_eq!(p.unwrap(), Point{ x: 3, y: 4 });
+
+    println!("Success!");
+}
