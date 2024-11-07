@@ -133,3 +133,220 @@ fn test7() {
 
     println!("Success!");
 }
+
+
+Chapter11.2
+
+
+fn test1() {
+    let arr: [u8; 3] = [1, 2, 3];
+    
+    // Convert array to vector
+    let v = Vec::from(arr);
+    is_vec(&v);
+
+    let v = vec![1, 2, 3];
+    is_vec(&v);
+
+    // Use the vec! macro (same as vec![..])
+    let v = vec!(1, 2, 3);
+    is_vec(&v);
+    
+    // Use Vec::new() and a for loop to rewrite the code
+    let mut v1 = Vec::new();
+    for &x in &arr {
+        v1.push(x);
+    }
+    is_vec(&v1);
+
+    // Check that both vectors are equal
+    assert_eq!(v, v1);
+
+    println!("Success!");
+}
+
+// Function to check and print the vector contents
+fn is_vec(v: &Vec<u8>) {
+    // For simplicity, just print the contents of the vector
+    println!("{:?}", v);
+}
+
+
+
+
+fn test2() {
+    let mut v1 = Vec::from([1, 2, 4]);
+    v1.pop(); // Removes the last element (4)
+    v1.push(3); // Adds 3 to the end of the vector
+
+    let mut v2 = Vec::new();
+    v2.extend(&v1); // Extends v2 with the elements from v1
+
+    assert_eq!(v1, v2); // Ensures v1 and v2 are equal
+
+    println!("Success!");
+}
+
+
+
+
+fn test3() {
+    // Array -> Vec
+    // impl From<[T; N]> for Vec
+    let arr = [1, 2, 3];
+    let v1 = Vec::from(arr); // Converts array to Vec
+    let v2: Vec<i32> = arr.to_vec(); // Converts array to Vec using to_vec method
+ 
+    assert_eq!(v1, v2);
+    
+    // String -> Vec
+    // impl From<String> for Vec
+    let s = "hello".to_string();
+    let v1: Vec<u8> = s.into_bytes(); // Converts String to Vec<u8> (byte representation)
+
+    let s = "hello".to_string();
+    let v2 = s.into_bytes(); // Another way to convert String to Vec<u8>
+    assert_eq!(v1, v2);
+
+    // impl<'_> From<&'_ str> for Vec
+    let s = "hello";
+    let v3 = Vec::from(s.as_bytes()); // Converts &str to Vec<u8>
+    assert_eq!(v2, v3);
+
+    // Iterators can be collected into vectors
+    let v4: Vec<i32> = [0; 10].into_iter().collect(); // Collects elements of the iterator into a Vec
+    assert_eq!(v4, vec![0; 10]);
+
+    println!("Success!");
+}
+
+
+
+fn test4() {
+    let mut v = Vec::from([1, 2, 3]);
+
+    // First loop, just print the existing values
+    for i in 0..v.len() {
+        println!("{:?}", v[i]);  // This will print the current values in the vector
+    }
+
+    // Second loop, add 1 to each element of the vector
+    for i in 0..v.len() {
+        v[i] += 1;  // Increment each element by 1
+    }
+    
+    // Assert the final state of the vector
+    assert_eq!(v, vec![2, 3, 4]);
+
+    println!("Success!");
+}
+
+
+
+fn test5() {
+    let mut v = vec![1, 2, 3];
+
+    let slice1 = &v[..]; // Get the whole vector as a slice
+    let slice2 = &v[0..v.len()]; // Use v.len() to safely slice the vector (no out of bounds error)
+    
+    assert_eq!(slice1, slice2);
+
+    // Slices are read-only
+    let vec_ref: &mut Vec<i32> = &mut v;
+    (*vec_ref).push(4); // Push 4 into the vector
+    
+    // Create a mutable slice (up to index 3)
+    let slice3 = &mut v[0..3];
+    slice3[0] = 10; // Modify the first element of the slice
+
+    assert_eq!(slice3, &[10, 2, 3]); // Now the slice reflects the updated value
+
+    println!("Success!");
+}
+
+
+
+fn test6() {
+    let mut vec = Vec::with_capacity(10);
+
+    // The vector contains no items, even though it has capacity for more
+    assert_eq!(vec.len(), 0);  // Length is 0 because we haven't added anything yet
+    assert_eq!(vec.capacity(), 10);  // Capacity is 10 as specified
+
+    // These are all done without reallocating...
+    for i in 0..10 {
+        vec.push(i);
+    }
+    assert_eq!(vec.len(), 10);  // Length is now 10 after pushing 10 elements
+    assert_eq!(vec.capacity(), 10);  // Capacity remains 10, no reallocation
+
+    // ...but this may make the vector reallocate
+    vec.push(11);
+    assert_eq!(vec.len(), 11);  // Length is now 11
+    assert!(vec.capacity() >= 11);  // Capacity is now greater than or equal to 11 (likely doubled)
+
+    // Fill in an appropriate value to make the `for` done without reallocating
+    let mut vec = Vec::with_capacity(100);  // Initial capacity of 100 ensures no reallocation
+    for i in 0..100 {
+        vec.push(i);
+    }
+
+    assert_eq!(vec.len(), 100);  // Length should be 100 after pushing 100 elements
+    assert_eq!(vec.capacity(), 100);  // Capacity should remain 100 as no reallocation occurred
+    
+    println!("Success!");
+}
+
+
+
+#[derive(Debug, PartialEq)] // Derive PartialEq for comparison
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+fn test7() {
+    // Initialize a vector containing distinct types of IpAddr enum
+    let v: Vec<IpAddr> = vec![
+        IpAddr::V4("127.0.0.1".to_string()),
+        IpAddr::V6("::1".to_string()),
+    ];
+
+    // Comparing two enums, which now derive PartialEq
+    assert_eq!(v[0], IpAddr::V4("127.0.0.1".to_string()));
+    assert_eq!(v[1], IpAddr::V6("::1".to_string()));
+
+    println!("Success!");
+}
+
+
+
+trait IpAddr {
+    fn display(&self);
+}
+
+struct V4(String);
+impl IpAddr for V4 {
+    fn display(&self) {
+        println!("ipv4: {:?}", self.0);
+    }
+}
+
+struct V6(String);
+impl IpAddr for V6 {
+    fn display(&self) {
+        println!("ipv6: {:?}", self.0);
+    }
+}
+
+fn test8() {
+    // The vector holds trait objects of type Box<dyn IpAddr>
+    let v: Vec<Box<dyn IpAddr>> = vec![
+        Box::new(V4("127.0.0.1".to_string())),
+        Box::new(V6("::1".to_string())),
+    ];
+
+    for ip in v {
+        ip.display();  // Call the `display` method on each trait object
+    }
+}
