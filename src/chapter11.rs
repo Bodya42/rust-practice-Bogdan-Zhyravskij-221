@@ -350,3 +350,187 @@ fn test8() {
         ip.display();  // Call the `display` method on each trait object
     }
 }
+
+
+Chapter11.3
+
+
+use std::collections::HashMap;
+
+#[derive(Debug, PartialEq)]
+enum Score {
+    Integer(i32),
+    Float(f64),
+    String(String),
+}
+
+fn test1() {
+    let mut scores = HashMap::new();
+    scores.insert("Sunface", Score::Integer(98));
+    scores.insert("Daniel", Score::Integer(95));
+    scores.insert("Ashley", Score::Float(69.0));  // Use Score::Float to unify types
+    scores.insert("Katie", Score::String("58".to_string()));  // Use Score::String to unify types
+
+    // Get returns an Option<&V>
+    let score = scores.get("Sunface");
+    assert_eq!(score, Some(&Score::Integer(98)));  // Compare with Score::Integer
+
+    if scores.contains_key("Daniel") {
+        // Indexing returns a value V
+        let score = &scores["Daniel"];
+        assert_eq!(score, &Score::Integer(95));  // Compare with Score::Integer
+        scores.remove("Daniel");
+    }
+
+    assert_eq!(scores.len(), 3);
+
+    for (name, score) in &scores {
+        println!("The score of {} is {:?}", name, score);
+    }
+}
+
+
+
+use std::collections::HashMap;
+
+fn test2() {
+    let teams = [
+        ("Chinese Team", 100),
+        ("American Team", 10),
+        ("France Team", 50),
+    ];
+
+    let mut teams_map1 = HashMap::new();
+    for team in &teams {
+        teams_map1.insert(team.0, team.1);
+    }
+
+    // IMPLEMENT team_map2 in two ways
+    // 1. Using `collect()` to transform the array of tuples into a HashMap
+    let teams_map2: HashMap<_, _> = teams.iter().cloned().collect();
+
+    // 2. Using `collect()` again, but starting from a different approach
+    let teams_map3: HashMap<_, _> = teams.iter().map(|&(k, v)| (k, v)).collect();
+
+    assert_eq!(teams_map1, teams_map2);
+    assert_eq!(teams_map1, teams_map3);
+
+    println!("Success!");
+}
+
+
+
+
+use std::collections::HashMap;
+
+fn test3() {
+    // Type inference lets us omit an explicit type signature (which
+    // would be `HashMap<&str, u8>` in this example).
+    let mut player_stats = HashMap::new();
+
+    // Insert a key only if it doesn't already exist
+    player_stats.entry("health").or_insert(100);
+
+    assert_eq!(player_stats["health"], 100);  // `health` should have the value 100 initially
+
+    // Insert a key using a function that provides a new value only if it
+    // doesn't already exist
+    player_stats.entry("health").or_insert_with(random_stat_buff);
+    assert_eq!(player_stats["health"], 100);  // Value doesn't change because "health" already exists
+
+    // Ensures a value is in the entry by inserting the default if empty, and returns
+    // a mutable reference to the value in the entry.
+    let health = player_stats.entry("health").or_insert(50);
+    assert_eq!(*health, 100);  // Value should still be 100
+    *health -= 50;
+    assert_eq!(*health, 50);  // After decreasing by 50, the value should be 50
+
+    println!("Success!");
+}
+
+fn random_stat_buff() -> u8 {
+    // Could actually return some random value here - let's just return
+    // some fixed value for now
+    42
+}
+
+
+
+
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+
+#[derive(Debug, Eq, PartialEq, Hash)]  // Deriving the required traits
+struct Viking {
+    name: String,
+    country: String,
+}
+
+impl Viking {
+    /// Creates a new Viking.
+    fn new(name: &str, country: &str) -> Viking {
+        Viking {
+            name: name.to_string(),
+            country: country.to_string(),
+        }
+    }
+}
+
+fn test4() {
+    // Use a HashMap to store the vikings' health points.
+    let vikings = HashMap::from([
+        (Viking::new("Einar", "Norway"), 25),
+        (Viking::new("Olaf", "Denmark"), 24),
+        (Viking::new("Harald", "Iceland"), 12),
+    ]);
+
+    // Use derived implementation to print the status of the vikings.
+    for (viking, health) in &vikings {
+        println!("{:?} has {} hp", viking, health);
+    }
+}
+
+
+
+
+use std::collections::HashMap;
+
+fn test0() {
+    // Create a HashMap with a starting capacity of 100
+    let mut map: HashMap<i32, i32> = HashMap::with_capacity(100);
+    map.insert(1, 2);
+    map.insert(3, 4);
+    
+    // Assert that the capacity of the map is at least 100
+    assert!(map.capacity() >= 100);
+
+    // Shrinks the capacity of the map to fit its current size
+    map.shrink_to_fit();
+    assert!(map.capacity() >= 2); // The capacity will not shrink below the number of elements
+
+    println!("Success!");
+}
+
+
+
+use std::collections::HashMap;
+
+fn test5() {
+    let v1 = 10;
+    let mut m1 = HashMap::new();
+    m1.insert(v1, v1);
+    println!("v1 is still usable after inserting to hashmap : {}", v1);
+
+    let v2 = "hello".to_string();
+    let mut m2 = HashMap::new();
+    // Ownership moved here, so we clone v2
+    m2.insert(v2.clone(), v1);
+
+    // v2 is still usable after cloning
+    assert_eq!(v2, "hello");
+
+    println!("Success!");
+}
+
+
+
